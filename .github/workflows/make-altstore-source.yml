@@ -1,0 +1,67 @@
+name: make-altstore-source
+permissions:
+  contents: write
+on:
+  workflow_run:
+    workflows: [build-unsigned-ipa]
+    types: [completed]
+  workflow_dispatch:
+jobs:
+  src:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - name: Generate altstore.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPO="$GITHUB_REPOSITORY"
+          SIZE=$(gh api repos/$REPO/releases/tags/swiftgram-latest --jq '.assets[0].size')
+          NAME=$(gh api repos/$REPO/releases/tags/swiftgram-latest --jq '.name')
+          VER=$(python3 -c 'import json;print(json.load(open("versions.json"))["app"])')
+          DATE=$(date -u +%Y-%m-%d)
+          cat > altstore.json <<EOF
+          {
+            "name": "Swiftgram (yoyoloxxx)",
+            "identifier": "com.yoyoloxxx.swiftgram.source",
+            "subtitle": "Telegram-форк для iPhone",
+            "iconURL": "https://raw.githubusercontent.com/$REPO/master/Telegram/Telegram-iOS/Resources/Icons/BlueIcon@3x.png",
+            "tintColor": "#2AABEE",
+            "apps": [
+              {
+                "name": "Swiftgram",
+                "bundleIdentifier": "app.swiftgram.ios",
+                "developerName": "Swiftgram",
+                "subtitle": "Расширенный Telegram",
+                "localizedDescription": "Сборка Swiftgram из исходников (github.com/Swiftgram/Telegram-iOS), без подписи — подписывает SideStore.",
+                "iconURL": "https://raw.githubusercontent.com/$REPO/master/Telegram/Telegram-iOS/Resources/Icons/BlueIcon@3x.png",
+                "tintColor": "#2AABEE",
+                "category": "social",
+                "screenshots": [],
+                "versions": [
+                  {
+                    "version": "$VER",
+                    "date": "$DATE",
+                    "size": $SIZE,
+                    "downloadURL": "https://github.com/$REPO/releases/download/swiftgram-latest/Swiftgram-unsigned.ipa",
+                    "minOSVersion": "13.0",
+                    "localizedDescription": "$NAME"
+                  }
+                ]
+              }
+            ],
+            "news": []
+          }
+          EOF
+          sed -i 's/^          //' altstore.json
+          python3 -c 'import json;json.load(open("altstore.json"))'
+      - name: Commit
+        run: |
+          git config user.name github-actions
+          git config user.email actions@users.noreply.github.com
+          git add altstore.json
+          git commit -m "Update altstore source" || exit 0
+          git push
