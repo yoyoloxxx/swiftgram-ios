@@ -1,0 +1,46 @@
+name: build-unsigned-ipa
+permissions:
+  contents: write
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Disk before
+        run: df -h /
+      - name: Select Xcode
+        run: |
+          V=$(python3 -c 'import json;print(json.load(open("versions.json"))["xcode"])')
+          sudo xcode-select -s /Applications/Xcode_$V.app/Contents/Developer
+          xcodebuild -version
+      - name: Build
+        run: |
+          set -x
+          sudo mkdir -p /Users/Shared
+          cp -R "$GITHUB_WORKSPACE" /Users/Shared/
+          mv /Users/Shared/$(basename "$GITHUB_WORKSPACE") /Users/Shared/telegram-ios
+          cd /Users/Shared/telegram-ios
+          export APP_VERSION=$(python3 -c 'import json;print(json.load(open("versions.json"))["app"])')
+          export BUILD_NUMBER=$(( $(git rev-list --count HEAD) + $(cat build_number_offset) ))
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
+          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+          python3 build-system/Make/ImportCertificates.py --path build-system/fake-codesigning/certs
+          python3 -u build-system/Make/Make.py --bazelUserRoot="/private/var/tmp/_bazel_containerhost" build \
+            --configurationPath="build-system/appstore-configuration.json" \
+            --codesigningInformationPath=build-system/fake-codesigning \
+            --configuration=release_arm64 --buildNumber="$BUILD_NUMBER"
+          mkdir -p /Users/Shared/out
+          cp bazel-out/applebin_ios-ios_arm*-opt-ST-*/bin/Telegram/Telegram.ipa /Users/Shared/out/Swiftgram-unsigned.ipa
+          ls -la /Users/Shared/out
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete swiftgram-latest --yes --cleanup-tag -R "$GITHUB_REPOSITORY" || true
+          gh release create swiftgram-latest /Users/Shared/out/Swiftgram-unsigned.ipa -R "$GITHUB_REPOSITORY" -t "Swiftgram $APP_VERSION ($BUILD_NUMBER) unsigned" -n "Unsigned IPA for SideStore/AltStore"
