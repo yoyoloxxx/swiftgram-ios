@@ -37,7 +37,7 @@ jobs:
             --codesigningInformationPath=build-system/fake-codesigning \
             --configuration=release_arm64 --buildNumber="$BUILD_NUMBER"
           mkdir -p /Users/Shared/out
-          cp bazel-out/applebin_ios-ios_arm*-opt-ST-*/bin/Telegram/Telegram.ipa /Users/Shared/out/Swiftgram-unsigned.ipa
+          IPA=$(find -L bazel-out build -name "*.ipa" -type f 2>/dev/null | head -n1); echo "IPA=$IPA"; cp "$IPA" /Users/Shared/out/Swiftgram-unsigned.ipa
           ls -la /Users/Shared/out
       - name: Release
         env:
