@@ -33,7 +33,7 @@ jobs:
             "apps": [
               {
                 "name": "Swiftgram",
-                "bundleIdentifier": "app.swiftgram.ios",
+                "bundleIdentifier": "ph.telegra.Telegraph",
                 "developerName": "Swiftgram",
                 "subtitle": "Расширенный Telegram",
                 "localizedDescription": "Сборка Swiftgram из исходников (github.com/Swiftgram/Telegram-iOS), без подписи — подписывает SideStore.",
