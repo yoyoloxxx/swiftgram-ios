@@ -1,4 +1,4 @@
-name: build-unsigned-ipa
+﻿name: build-unsigned-ipa
 permissions:
   contents: write
 on:
@@ -30,6 +30,7 @@ jobs:
           export BUILD_NUMBER=$(( $(git rev-list --count HEAD) + $(cat build_number_offset) ))
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+          python3 -c "import json;p='build-system/appstore-configuration.json';d=json.load(open(p));d['sg_config']='{}';json.dump(d,open(p,'w'),indent=2)"
           python3 build-system/Make/ImportCertificates.py --path build-system/fake-codesigning/certs
           python3 -u build-system/Make/Make.py --bazelUserRoot="/private/var/tmp/_bazel_containerhost" build \
             --configurationPath="build-system/appstore-configuration.json" \
