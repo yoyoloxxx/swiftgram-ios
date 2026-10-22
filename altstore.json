@@ -1,0 +1,31 @@
+{
+  "name": "Swiftgram (yoyoloxxx)",
+  "identifier": "com.yoyoloxxx.swiftgram.source",
+  "subtitle": "Telegram-форк для iPhone",
+  "iconURL": "https://raw.githubusercontent.com/yoyoloxxx/swiftgram-ios/master/Telegram/Telegram-iOS/Resources/Icons/BlueIcon@3x.png",
+  "tintColor": "#2AABEE",
+  "apps": [
+    {
+      "name": "Swiftgram",
+      "bundleIdentifier": "app.swiftgram.ios",
+      "developerName": "Swiftgram",
+      "subtitle": "Расширенный Telegram",
+      "localizedDescription": "Сборка Swiftgram из исходников (github.com/Swiftgram/Telegram-iOS), без подписи — подписывает SideStore.",
+      "iconURL": "https://raw.githubusercontent.com/yoyoloxxx/swiftgram-ios/master/Telegram/Telegram-iOS/Resources/Icons/BlueIcon@3x.png",
+      "tintColor": "#2AABEE",
+      "category": "social",
+      "screenshots": [],
+      "versions": [
+        {
+"version": "12.9.2",
+"date": "2026-10-22",
+"size": 81301137,
+"downloadURL": "https://github.com/yoyoloxxx/swiftgram-ios/releases/download/swiftgram-latest/Swiftgram-unsigned.ipa",
+"minOSVersion": "13.0",
+"localizedDescription": "Swiftgram 12.9.2 (34484) unsigned"
+        }
+      ]
+    }
+  ],
+  "news": []
+}
